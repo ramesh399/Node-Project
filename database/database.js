@@ -6,4 +6,4 @@ const sequelize = new Sequelize("sampledb","root","",{
 });
 
 module.exports = sequelize;
-// Database created.  
+// Database 123created.  
