@@ -9,6 +9,18 @@ const bcrypt = require('bcrypt');
 sequelize.sync();
 
 
+router.get('/testdre', (req, res) => {
+  return User.findAll().then((user) => {
+    if (user) {
+      res.send(user);
+    }
+    else {
+      res.status(400).send("Error in fectch data");
+    }
+  });
+});
+
+
 router.post('/signup', (req, res) => {
   return User.findOne({ where: { email: req.body.email } }).then((result) => {
     if (result) {
