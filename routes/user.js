@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 
 sequelize.sync();
 
-console.log("Hai Anu");
+
 router.get('/testdre', (req, res) => {
   return User.findAll().then((user) => {
     if (user) {
