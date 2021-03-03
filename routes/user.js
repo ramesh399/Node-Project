@@ -4,12 +4,13 @@ var router = express.Router();
 const sequelize = require('./../database/database');
 const User = require('./../models/model');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 
 sequelize.sync();
 
 
-router.get('/testdre', (req, res) => {
+router.get('/test', (req, res) => {
   return User.findAll().then((user) => {
     if (user) {
       res.send(user);
@@ -50,16 +51,7 @@ router.post('/signup', (req, res) => {
     }
   });
 });
-  router.get('/', (req, res) => {
-    return User.findAll().then((user) => {
-      if (user) {
-        res.send(user);
-      }
-      else {
-        res.status(400).send("Error in fectch data");
-      }
-    });
-  });
+  
 
   router.delete('/:id', (req, res) => {
     return User.destroy({ where: { id: req.params.id } }).then((deleted) => {
@@ -82,5 +74,45 @@ router.post('/signup', (req, res) => {
     }).catch((err) => { res.send(err) });
   });
 
+  router.post('/login',async (req,res)=>{
+    var userData =await  User.findOne({where:{email:req.body.email}});
+    if(!userData){
+       return res.status(400).send('Email not exist');
+    }
+    //console.log(userData);
+    var validpass = await bcrypt.compare(req.body.password,userData.password);
+
+    if(!validpass){
+       return res.status(400).send("Password is not valid");
+    }
+
+    var token = await jwt.sign({email:userData.email},'Secret');
+
+    res.header('auth',token).send(token);
+  });
+
+  const validUser = (req,res,next)=>{
+    var jwttoken = req.header('auth');
+    req.token = jwttoken;
+    next()
+  }
+
+  router.get('/',validUser, (req, res) => {
+    jwt.verify(req.token,'Secret',async(err,data)=>{
+      if(err){
+        res.sendStatus(403);
+      }
+      else{
+         var getUserData =await User.findAll();
+          if (getUserData) {
+            res.send(getUserData);
+          }
+          else {
+            res.status(400).send("Error in fectch data");
+          }
+      }
+    })
+   
+  });
 
   module.exports = router;
